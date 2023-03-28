@@ -3,12 +3,11 @@ import {
   Post,
   Body,
   Get,
-  Param,
   Put,
   Patch,
-  Delete,
-  ParseIntPipe
+  Delete
 } from "@nestjs/common";
+import { ParamId } from "src/decorators/param-id.decorator";
 import { CreateUserDTO } from "./dto/create-user.dto";
 import { UpdatePatchUserDTO } from "./dto/update-patch-user.dto";
 import { UpdatePutUserDTO } from "./dto/update-put-user.dto";
@@ -29,14 +28,15 @@ export class UserController {
   }
 
   @Get(":id")
-  async show(@Param("id", ParseIntPipe) id: number) {
+  async show(@ParamId() id: number) {
+    console.log({ id });
     return this.userService.show(id);
   }
 
   @Put(":id")
   async update(
     @Body() { name, email, password, birthAt }: UpdatePutUserDTO,
-    @Param("id", ParseIntPipe) id
+    @ParamId() id
   ) {
     return this.userService.update(id, { name, email, password, birthAt });
   }
@@ -44,13 +44,13 @@ export class UserController {
   @Patch(":id")
   async updatePartial(
     @Body() { name, email, password }: UpdatePatchUserDTO,
-    @Param("id", ParseIntPipe) id
+    @ParamId() id
   ) {
     return this.userService.updatePartial(id, { name, email, password });
   }
 
   @Delete(":id")
-  async delete(@Param("id", ParseIntPipe) id) {
+  async delete(@ParamId() id) {
     return this.userService.delete(id);
   }
 }
