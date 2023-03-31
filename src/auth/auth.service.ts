@@ -8,6 +8,7 @@ import { User } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 import { AuthRegisterDTO } from "./dto/auth-register.dto";
 import { UserService } from "src/user/user.service";
+import * as bcrypt from "bcrypt";
 
 @Injectable()
 export class AuthService {
@@ -20,7 +21,7 @@ export class AuthService {
     private readonly userService: UserService
   ) {}
 
-  async createToken(user: User) {
+  createToken(user: User) {
     return {
       accessToken: this.jwtService.sign(
         {
@@ -38,7 +39,7 @@ export class AuthService {
     };
   }
 
-  async checkToken(token: string) {
+  checkToken(token: string) {
     try {
       const data = this.jwtService.verify(token, {
         issuer: this.issuer,
@@ -50,7 +51,7 @@ export class AuthService {
     }
   }
 
-  async isValidToken(token: string) {
+  isValidToken(token: string) {
     try {
       this.checkToken(token);
       return true;
@@ -62,12 +63,15 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await this.prisma.user.findFirst({
       where: {
-        email,
-        password
+        email
       }
     });
 
     if (!user) {
+      throw new UnauthorizedException("E-mail e/ou senha incorretos.");
+    }
+
+    if (await bcrypt.compare(password, user.password)) {
       throw new UnauthorizedException("E-mail e/ou senha incorretos.");
     }
 
